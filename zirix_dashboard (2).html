@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="theme-color" content="#0B1F3A">
+<title>Zirix — Moliyaviy Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Font fallback for offline/Telegram */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0B1F3A;
+  --navy-mid:#1e1044;
+  --navy-light:#2d1472;
+  --accent:#7C3AED;
+  --accent-light:#EEEDFE;
+  --green:#00C896;
+  --green-light:#E6FAF5;
+  --red:#FF4D4D;
+  --red-light:#FFF0F0;
+  --amber:#EF9F27;
+  --amber-light:#FAEEDA;
+  --text:#0B1F3A;
+  --text-mid:#4A5568;
+  --text-light:#94A3B8;
+  --border:#E2E8F0;
+  --bg:#F7F9FC;
+  --card:#FFFFFF;
+  --sidebar-w:240px;
+}
+
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:-webkit-fill-available;font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+html{height:-webkit-fill-available}
+
+/* LAYOUT */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:#0B1F3A;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+
+/* SIDEBAR */
+.logo{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:#4C1D95;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;position:relative}
+.logo-name{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;letter-spacing:.08em;text-transform:uppercase}
+
+.nav{padding:16px 0;flex:1}
+.nav-section{padding:8px 16px 4px;font-size:10px;color:rgba(255,255,255,.3);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.6);cursor:pointer;transition:all .15s;margin:1px 0;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:rgba(124,58,237,.2);color:#fff;border-left-color:#7C3AED}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8}
+.nav-item span{font-size:13px;font-weight:500}
+
+.sidebar-footer{padding:16px;border-top:1px solid rgba(255,255,255,.08)}
+.user-row{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:#4C1D95;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* TOPBAR */
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.page-title{font-size:16px;font-weight:600;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.cur-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;color:var(--text-mid);transition:all .15s}
+.cur-btn.active{background:#4C1D95;color:#fff;border-color:#4C1D95}
+.notif-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-mid)}
+
+/* CONTENT */
+.content{padding:28px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* OVERVIEW GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.kpi-label{font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.kpi-val{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.5px;margin-bottom:4px}
+.kpi-change{font-size:12px;font-weight:500}
+.kpi-change.up{color:var(--green)}
+.kpi-change.down{color:var(--red)}
+.kpi-icon{float:right;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-top:-4px}
+
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.card-sub{font-size:12px;color:var(--text-light)}
+.chart-wrap{position:relative;height:200px}
+
+/* TRANSACTIONS */
+.tx-list{display:flex;flex-direction:column;gap:0}
+.tx-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.tx-item:last-child{border-bottom:none}
+.tx-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tx-info{flex:1;min-width:0}
+.tx-name{font-size:13px;font-weight:500;color:var(--text)}
+.tx-cat{font-size:11px;color:var(--text-light);margin-top:1px}
+.tx-right{text-align:right}
+.tx-amount{font-size:14px;font-weight:600}
+.tx-amount.expense{color:var(--red)}
+.tx-amount.income{color:var(--green)}
+.tx-date{font-size:11px;color:var(--text-light);margin-top:1px}
+
+/* ACCOUNTS */
+.accounts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.account-card{border-radius:14px;padding:20px;color:#fff;position:relative;overflow:hidden}
+.account-card::after{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.07)}
+.acc-bank{font-size:11px;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.06em}
+.acc-num{font-size:13px;opacity:.6;margin:6px 0 16px;letter-spacing:.1em}
+.acc-bal-label{font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:.06em}
+.acc-bal{font-size:22px;font-weight:700;letter-spacing:-.3px;margin-top:2px}
+
+/* GOALS PAGE */
+.goals-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+.goal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.goal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.goal-name{font-size:14px;font-weight:600}
+.goal-deadline{font-size:11px;color:var(--text-light);margin-top:2px}
+.goal-pct-badge{font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px}
+.prog-track{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.prog-fill{height:100%;border-radius:99px}
+.goal-amounts{display:flex;justify-content:space-between;font-size:12px;color:var(--text-light)}
+.goal-amounts strong{color:var(--text);font-weight:600}
+.add-goal-card{border:2px dashed var(--border);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);font-size:13px;font-weight:500;gap:8px;transition:all .15s;background:transparent}
+.add-goal-card:hover{border-color:#7C3AED;color:#7C3AED;background:#EEEDFE}
+
+/* ANALYTICS PAGE */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* EXPENSES ADD FORM */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-full{grid-column:1/-1}
+.field-label{font-size:11px;font-weight:600;color:var(--text-mid);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.04em}
+.field-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--bg);outline:none;font-family:'Inter',sans-serif;transition:border .15s}
+.field-input:focus{border-color:#7C3AED;background:#fff}
+.btn-primary{padding:10px 20px;background:#4C1D95;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-primary:hover{background:#7C3AED}
+.btn-ghost{padding:10px 20px;background:transparent;color:var(--text-mid);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-ghost:hover{background:var(--bg)}
+
+/* FILTER PILLS */
+.filter-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.pill{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);font-size:12px;font-weight:500;cursor:pointer;color:var(--text-mid);transition:all .15s}
+.pill.active{background:#4C1D95;color:#fff;border-color:#4C1D95}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-green{background:var(--green-light);color:#006B50}
+.badge-red{background:var(--red-light);color:#CC0000}
+.badge-amber{background:var(--amber-light);color:#92610B}
+.badge-blue{background:var(--accent-light);color:#1455BB}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:2px solid var(--border);text-align:left}
+.data-table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--bg)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(11,31,58,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:min(460px,92vw);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:20px;color:var(--text)}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#4C1D95;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .3s;z-index:300;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(11,31,58,.3)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* TOUCH FRIENDLY */
+.nav-item,.btn-primary,.btn-ghost,.pill,.cur-btn,.del-btn,.add-goal-card{
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;
+}
+.field-input,.login-field input{
+  -webkit-appearance:none;appearance:none;
+  font-size:16px!important; /* prevents iOS zoom on focus */
+  border-radius:8px;
+}
+@media(max-width:600px){
+  .btn-primary,.btn-ghost{padding:12px 18px;font-size:14px;min-height:44px}
+  .pill{padding:8px 16px;min-height:36px}
+  .del-btn{padding:8px 10px;min-height:36px}
+  .nav-item{min-height:44px}
+  .cur-btn{padding:8px 14px;min-height:36px}
+}
+/* Fix modal on mobile - prevent fixed pos issues */
+.modal-bg{
+  position:fixed;inset:0;
+  -webkit-overflow-scrolling:touch;
+  overflow-y:auto;
+}
+.modal{
+  margin:auto;
+}
+/* Scrollable content areas */
+.main{overflow-x:hidden}
+.content{overflow-x:hidden}
+/* Fix chart canvas on Telegram */
+canvas{max-width:100%;display:block}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text-light);padding:4px 6px;border-radius:6px;font-size:13px;transition:all .15s}
+.del-btn:hover{color:var(--red);background:var(--red-light)}
+
+/* LOGIN SCREEN */
+.login-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:999;transition:opacity .4s}
+.login-screen.hidden{opacity:0;pointer-events:none}
+.login-box{background:#fff;border-radius:20px;padding:40px;width:min(420px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center}
+.login-logo-icon{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff}
+.login-logo-name{font-size:22px;font-weight:700;color:var(--navy)}
+.login-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;text-align:center}
+.login-sub{font-size:13px;color:var(--text-light);margin-bottom:24px;text-align:center}
+.login-field{margin-bottom:14px}
+.login-field label{font-size:11px;font-weight:600;color:var(--text-mid);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.login-field input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);outline:none;font-family:'Inter',sans-serif;transition:border .15s}
+.login-field input:focus{border-color:#7C3AED;background:#fff}
+.login-err{font-size:12px;color:var(--red);margin-top:-8px;margin-bottom:10px;display:none}
+.login-btn{width:100%;padding:12px;background:#4C1D95;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;margin-top:6px}
+.login-btn:hover{background:#7C3AED}
+.login-hint{font-size:11px;color:var(--text-light);text-align:center;margin-top:16px;padding:10px;background:var(--bg);border-radius:8px}
+
+/* CARD MODAL */
+.card-visual{border-radius:14px;padding:22px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px;min-height:130px;background:linear-gradient(135deg,#0B1F3A,#1E3A66)}
+.card-visual::after{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.07)}
+.card-visual::before{content:'';position:absolute;left:-30px;bottom:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.04)}
+.card-chip{width:32px;height:24px;background:linear-gradient(135deg,#D4AF37,#F0D060);border-radius:4px;margin-bottom:16px;position:relative;z-index:1}
+.card-num-display{font-size:15px;letter-spacing:.15em;font-weight:500;margin-bottom:12px;position:relative;z-index:1;opacity:.9}
+.card-bottom-row{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1}
+.card-holder-label{font-size:9px;opacity:.5;text-transform:uppercase;letter-spacing:.1em}
+.card-holder-name{font-size:13px;font-weight:600;margin-top:2px}
+.card-exp-label{font-size:9px;opacity:.5;text-transform:uppercase;letter-spacing:.1em;text-align:right}
+.card-exp-val{font-size:13px;font-weight:600;text-align:right;margin-top:2px}
+.cards-list{display:flex;flex-direction:column;gap:10px;max-height:260px;overflow-y:auto;margin-bottom:16px}
+.card-item{border-radius:10px;padding:14px 16px;color:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.card-item-info{position:relative;z-index:1}
+.card-item-name{font-size:12px;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.06em}
+.card-item-num{font-size:14px;font-weight:600;letter-spacing:.1em;margin-top:2px}
+.card-item-exp{font-size:11px;opacity:.6;margin-top:4px}
+.card-del-btn{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;position:relative;z-index:1;transition:all .15s}
+.card-del-btn:hover{background:rgba(255,0,0,.4)}
+
+/* PROFILE TOPBAR BTN */
+.profile-btn{width:34px;height:34px;border-radius:50%;background:#4C1D95;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.profile-btn:hover{border-color:#7C3AED;background:#7C3AED}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{width:60px}
+  .logo-name,.logo-sub,.nav-item span,.nav-section,.user-info{display:none}
+  .nav-item{justify-content:center;padding:12px}
+  .main{margin-left:60px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-grid,.goals-grid,.analytics-grid,.accounts-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  /* Mobile: bottom navigation bar */
+  .sidebar{
+    width:100%;height:60px;bottom:0;top:auto;left:0;
+    flex-direction:row;align-items:center;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    padding-bottom:constant(safe-area-inset-bottom,0px);
+    border-top:1px solid rgba(255,255,255,.1);
+  }
+  .logo{display:none}
+  .nav{display:flex;flex-direction:row;padding:0;flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav-section{display:none}
+  .nav-item{flex-direction:column;gap:3px;padding:8px 12px;min-width:60px;border-left:none;border-top:3px solid transparent;margin:0}
+  .nav-item.active{border-left-color:transparent;border-top-color:#7C3AED}
+  .nav-item svg{width:20px;height:20px}
+  .nav-item span{display:block;font-size:9px;opacity:.8;white-space:nowrap}
+  .sidebar-footer{display:none}
+  .main{margin-left:0;margin-bottom:60px}
+  .topbar{padding:0 16px;height:52px}
+  .content{padding:14px;padding-bottom:20px}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .form-grid{grid-template-columns:1fr}
+  .kpi-val{font-size:20px}
+  .modal{padding:20px;width:94vw}
+  .chart-wrap{height:180px}
+  .accounts-grid{grid-template-columns:1fr}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:14px}
+  .content{padding:10px}
+}
+/* TOUCH & CROSS-BROWSER */
+.nav-item,.btn-primary,.btn-ghost,.pill,.cur-btn,.del-btn{
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;
+}
+.field-input,.login-field input{
+  -webkit-appearance:none;-moz-appearance:none;appearance:none;
+  font-size:16px!important;
+}
+@media(max-width:600px){
+  .btn-primary,.btn-ghost{min-height:44px}
+  .pill{min-height:36px}
+  .cur-btn{min-height:36px}
+}
+.modal-bg{-webkit-overflow-scrolling:touch}
+canvas{max-width:100%;display:block}
+.main{overflow-x:hidden}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon" style="background:#4C1D95;position:relative">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="4" y="4" width="18" height="4" rx="2" fill="white"/>
+          <rect x="4" y="18" width="18" height="4" rx="2" fill="white"/>
+          <line x1="22" y1="4" x2="4" y2="22" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <span style="position:absolute;top:-3px;right:-3px;width:11px;height:11px;background:#EF9F27;border-radius:50%;border:2px solid white"></span>
+      </div>
+      <div class="login-logo-name" style="color:#0B1F3A">Zirix</div>
+    </div>
+    <div class="login-title">Xush kelibsiz!</div>
+    <div class="login-sub">Moliyaviy dashboardga kirish uchun ma'lumot kiriting</div>
+    <div class="login-field">
+      <label>Foydalanuvchi nomi</label>
+      <input type="text" id="login-username" placeholder="masalan: abdulloh" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>Parol</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <div class="login-err" id="login-err">❌ Noto'g'ri foydalanuvchi nomi yoki parol</div>
+    <button class="login-btn" onclick="doLogin()">Kirish →</button>
+    <div class="login-hint">💡 Demo: istalgan username va parol (kamida 4 ta belgi)</div>
+  </div>
+</div>
+
+<div class="shell" id="main-shell" style="display:none">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="3" width="14" height="3" rx="1.5" fill="white"/>
+          <rect x="3" y="14" width="14" height="3" rx="1.5" fill="white"/>
+          <line x1="17" y1="3" x2="3" y2="17" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span style="position:absolute;top:-4px;right:-4px;width:9px;height:9px;background:#EF9F27;border-radius:50%;border:1.5px solid #0B1F3A"></span>
+      </div>
+      <div>
+        <div class="logo-name">Zirix</div>
+        <div class="logo-sub">Moliyaviy Dashboard</div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Asosiy</div>
+    <div class="nav-item active" onclick="showPage('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Umumiy ko'rinish</span>
+    </div>
+    <div class="nav-item" onclick="showPage('accounts',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <span>Hisoblar</span>
+    </div>
+    <div class="nav-item" onclick="showPage('expenses',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Xarajatlar</span>
+    </div>
+    <div class="nav-item" onclick="showPage('income',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <span>Daromadlar</span>
+    </div>
+    <div class="nav-item" onclick="showPage('goals',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      <span>Maqsadlar</span>
+    </div>
+    <div class="nav-section">Tahlil</div>
+    <div class="nav-item" onclick="showPage('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Tahlil</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row" style="cursor:pointer" onclick="openProfileModal()" title="Profilni tahrirlash">
+      <div class="avatar" id="sidebar-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-username">Foydalanuvchi</div>
+        <div class="user-role">Shaxsiy hisob</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <button onclick="doLogout()" style="width:100%;padding:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s" onmouseover="this.style.background='rgba(255,77,77,.2)';this.style.color='#ff6b6b'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.6)'">
+        🚪 Chiqish
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="page-title">Umumiy ko'rinish</div>
+    <div class="topbar-right">
+      <button class="cur-btn active" id="btn-usd" onclick="setCur('USD')">USD $</button>
+      <button class="cur-btn" id="btn-uzs" onclick="setCur('UZS')">UZS so'm</button>
+      <div class="profile-btn" id="topbar-avatar" onclick="openProfileModal()" title="Profil sozlamalari">A</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <!-- Real-time balance banner -->
+      <div id="balance-banner" style="background:linear-gradient(135deg,#0B1F3A,#4C1D95);border-radius:16px;padding:24px 28px;margin-bottom:20px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Umumiy Qoldiq (Real vaqt)</div>
+          <div id="balance-val" style="font-size:36px;font-weight:700;letter-spacing:-.5px">—</div>
+          <div id="balance-sub" style="font-size:13px;opacity:.6;margin-top:4px"></div>
+        </div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <div style="text-align:center">
+            <div style="font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Bu oy daromad</div>
+            <div id="banner-income" style="font-size:18px;font-weight:700;color:#00C896">—</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,.1)"></div>
+          <div style="text-align:center">
+            <div style="font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Bu oy xarajat</div>
+            <div id="banner-expense" style="font-size:18px;font-weight:700;color:#FF6B6B">—</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,.1)"></div>
+          <div style="text-align:center">
+            <div style="font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Bu oy sof</div>
+            <div id="banner-net" style="font-size:18px;font-weight:700">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpi-grid"></div>
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Daromad va Xarajat</div><div class="card-sub">So'nggi 6 oy</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="overviewChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Xarajat kategoriyalari</div></div>
+          <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">So'nggi operatsiyalar</div>
+          <span class="badge badge-blue" id="tx-count-badge"></span>
+        </div>
+        <div class="tx-list" id="recent-tx"></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div id="page-accounts" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:600;color:var(--text)">Mening kartalarim</div>
+        <button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="openAddCardInline()">+ Karta qo'shish</button>
+      </div>
+      <div id="accounts-grid" class="accounts-grid"></div>
+
+      <!-- Inline add card form -->
+      <div id="inline-card-form" style="display:none;margin-bottom:24px">
+        <div class="card" style="border:2px dashed var(--accent)">
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px">💳 Yangi karta qo'shish</div>
+          <!-- Preview -->
+          <div class="card-visual" id="inline-card-preview" style="max-width:340px;margin-bottom:16px">
+            <div class="card-chip"></div>
+            <div class="card-num-display" id="iprev-num">•••• •••• •••• ••••</div>
+            <div class="card-bottom-row">
+              <div><div class="card-holder-label">Egasi</div><div class="card-holder-name" id="iprev-name">TO'LIQ ISM</div></div>
+              <div><div class="card-exp-label">Muddat</div><div class="card-exp-val" id="iprev-exp">MM/YY</div></div>
+            </div>
+          </div>
+          <div class="form-grid" style="gap:12px;margin-bottom:14px">
+            <div class="form-full">
+              <label class="field-label">Karta raqami</label>
+              <input class="field-input" id="icard-num" placeholder="0000 0000 0000 0000" maxlength="19" oninput="iFormatNum(this)"/>
+            </div>
+            <div>
+              <label class="field-label">Egasi ismi</label>
+              <input class="field-input" id="icard-name" placeholder="A. KARIMOV" oninput="document.getElementById('iprev-name').textContent=this.value.toUpperCase()||'TO\'LIQ ISM'"/>
+            </div>
+            <div>
+              <label class="field-label">Muddat (MM/YY)</label>
+              <input class="field-input" id="icard-exp" placeholder="MM/YY" maxlength="5" oninput="iFormatExp(this)"/>
+            </div>
+            <div>
+              <label class="field-label">Bank nomi</label>
+              <input class="field-input" id="icard-bank" placeholder="masalan: Kapitalbank"/>
+            </div>
+            <div>
+              <label class="field-label">Balans (ixtiyoriy)</label>
+              <input class="field-input" type="number" id="icard-bal" placeholder="0.00"/>
+            </div>
+            <div>
+              <label class="field-label">Karta rangi</label>
+              <select class="field-input" id="icard-color" onchange="iUpdatePreviewColor()">
+                <option value="navy">Ko'k-qovoq</option>
+                <option value="blue">Ko'k</option>
+                <option value="green">Yashil</option>
+                <option value="purple">Binafsha</option>
+                <option value="red">Qizil</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-primary" onclick="addCardInline()">✅ Qo'shish</button>
+            <button class="btn-ghost" onclick="closeAddCardInline()">Bekor</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Barcha operatsiyalar</div></div>
+        <table class="data-table" id="all-tx-table"></table>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div id="page-expenses" class="page">
+      <div class="form-card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text)">Yangi xarajat qo'shish</div>
+        <div class="form-grid">
+          <div><label class="field-label">Nomi</label><input class="field-input" id="exp-name" placeholder="masalan: Tushlik" /></div>
+          <div><label class="field-label">Miqdor</label><input class="field-input" type="number" id="exp-amount" placeholder="0.00" /></div>
+          <div><label class="field-label">Kategoriya</label>
+            <select class="field-input" id="exp-cat">
+              <option>🍔 Oziq-ovqat</option>
+              <option>🚌 Transport</option>
+              <option>🏠 Uy-joy</option>
+              <option>👕 Kiyim</option>
+              <option>🎮 Ko'ngilochar</option>
+              <option>💊 Salomatlik</option>
+              <option>📚 Ta'lim</option>
+              <option>💼 Ish</option>
+              <option>🔧 Boshqa</option>
+            </select>
+          </div>
+          <div><label class="field-label">Sana</label><input class="field-input" type="date" id="exp-date" /></div>
+          <div class="form-full"><label class="field-label">Izoh (ixtiyoriy)</label><input class="field-input" id="exp-note" placeholder="qo'shimcha ma'lumot" /></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" onclick="addExpense()">+ Qo'shish</button>
+          <button class="btn-ghost" onclick="clearExpForm()">Tozalash</button>
+        </div>
+      </div>
+      <div class="filter-row" id="exp-filters"></div>
+      <div class="card">
+        <table class="data-table" id="exp-table"></table>
+      </div>
+    </div>
+
+    <!-- GOALS -->
+    <div id="page-goals" class="page">
+      <div class="goals-grid" id="goals-grid"></div>
+    </div>
+
+    <!-- INCOME PAGE -->
+    <div id="page-income" class="page">
+      <div class="form-card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text)">💰 Yangi daromad qo'shish</div>
+        <div class="form-grid">
+          <div><label class="field-label">Daromad nomi</label><input class="field-input" id="inc-name" placeholder="masalan: Oylik maosh" /></div>
+          <div><label class="field-label">Miqdor</label><input class="field-input" type="number" id="inc-amount" placeholder="0.00" /></div>
+          <div><label class="field-label">Ish xonasi / Manba</label>
+            <input class="field-input" id="inc-source" placeholder="masalan: Asosiy ish, Freelance..." list="source-suggestions"/>
+            <datalist id="source-suggestions">
+              <option value="Asosiy ish">
+              <option value="Qo'shimcha ish">
+              <option value="Freelance">
+              <option value="Biznes">
+              <option value="Ijara">
+              <option value="Investitsiya">
+              <option value="Sovg'a">
+              <option value="Boshqa">
+            </datalist>
+          </div>
+          <div><label class="field-label">Kategoriya</label>
+            <select class="field-input" id="inc-cat">
+              <option>💼 Maosh</option>
+              <option>🏢 Biznes</option>
+              <option>💻 Freelance</option>
+              <option>🏠 Ijara</option>
+              <option>📈 Investitsiya</option>
+              <option>🎁 Sovg'a / Bonus</option>
+              <option>🔧 Boshqa</option>
+            </select>
+          </div>
+          <div><label class="field-label">Sana</label><input class="field-input" type="date" id="inc-date" /></div>
+          <div><label class="field-label">Izoh (ixtiyoriy)</label><input class="field-input" id="inc-note" placeholder="qo'shimcha ma'lumot" /></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" style="background:var(--green)" onclick="addIncome()">+ Qo'shish</button>
+          <button class="btn-ghost" onclick="clearIncForm()">Tozalash</button>
+        </div>
+      </div>
+      <div class="filter-row" id="inc-filters"></div>
+      <div class="card">
+        <table class="data-table" id="inc-table"></table>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="page-analytics" class="page">
+      <!-- Monthly income by source -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div><div class="card-title">📊 Oylik daromad — Ish xonalari bo'yicha</div><div class="card-sub">So'nggi 30 kun</div></div>
+        </div>
+        <div id="source-analysis" style="padding-top:4px"></div>
+      </div>
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Daromad vs Xarajat</div></div>
+          <div class="chart-wrap"><canvas id="incomeExpChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Xarajat kategoriyalari</div></div>
+          <div class="chart-wrap"><canvas id="catPieChart"></canvas></div>
+        </div>
+      </div>
+      <div class="analytics-grid" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Daromad manbalari</div></div>
+          <div class="chart-wrap"><canvas id="sourceChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Jamg'arma o'sishi</div></div>
+          <div class="chart-wrap"><canvas id="savingsChart"></canvas></div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="analytics-kpi"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-bg" id="goal-modal">
+  <div class="modal">
+    <div class="modal-title">Yangi maqsad</div>
+    <div class="form-grid">
+      <div class="form-full"><label class="field-label">Maqsad nomi</label><input class="field-input" id="g-name" placeholder="masalan: Avtomobil uchun" /></div>
+      <div><label class="field-label">Maqsad summasi ($)</label><input class="field-input" type="number" id="g-target" placeholder="10000" /></div>
+      <div><label class="field-label">Hozirgi miqdor ($)</label><input class="field-input" type="number" id="g-current" placeholder="2000" /></div>
+      <div class="form-full"><label class="field-label">Muddat</label><input class="field-input" type="date" id="g-deadline" /></div>
+      <div class="form-full"><label class="field-label">Rang</label>
+        <select class="field-input" id="g-color">
+          <option value="#2E7DFF">Ko'k</option>
+          <option value="#00C896">Yashil</option>
+          <option value="#F59E0B">Sariq</option>
+          <option value="#FF4D4D">Qizil</option>
+          <option value="#8B5CF6">Binafsha</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeGoalModal()">Bekor</button>
+      <button class="btn-primary" onclick="saveGoal()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-bg" id="profile-modal">
+  <div class="modal" style="width:min(480px,94vw)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="modal-title" style="margin-bottom:0">👤 Profil sozlamalari</div>
+      <button class="del-btn" onclick="closeProfileModal()" style="font-size:16px">✕</button>
+    </div>
+    <!-- Username section -->
+    <div style="background:var(--bg);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Foydalanuvchi ma'lumotlari</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label class="field-label">Foydalanuvchi nomi</label>
+          <input class="field-input" id="prof-username" placeholder="username" />
+        </div>
+        <div>
+          <label class="field-label">To'liq ism</label>
+          <input class="field-input" id="prof-fullname" placeholder="Ism Familiya" />
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <label class="field-label">Yangi parol (ixtiyoriy)</label>
+        <input class="field-input" type="password" id="prof-password" placeholder="O'zgartirish uchun kiriting" />
+      </div>
+      <button class="btn-primary" style="margin-top:12px;width:100%" onclick="saveProfile()">💾 Saqlash</button>
+    </div>
+    <!-- Cards section -->
+    <div style="background:var(--bg);border-radius:10px;padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.04em">💳 Kartalar</div>
+        <button class="btn-primary" style="padding:6px 12px;font-size:12px" onclick="toggleAddCardForm()">+ Karta qo'shish</button>
+      </div>
+      <div class="cards-list" id="cards-list"></div>
+      <!-- Add card form -->
+      <div id="add-card-form" style="display:none;border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Yangi karta</div>
+        <!-- Card preview -->
+        <div class="card-visual" id="card-preview">
+          <div class="card-chip"></div>
+          <div class="card-num-display" id="prev-num">•••• •••• •••• ••••</div>
+          <div class="card-bottom-row">
+            <div><div class="card-holder-label">Egasi</div><div class="card-holder-name" id="prev-name">FULLNAME</div></div>
+            <div><div class="card-exp-label">Muddat</div><div class="card-exp-val" id="prev-exp">MM/YY</div></div>
+          </div>
+        </div>
+        <div class="form-grid" style="gap:10px;margin-bottom:10px">
+          <div class="form-full">
+            <label class="field-label">Karta raqami</label>
+            <input class="field-input" id="card-num" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNum(this)" />
+          </div>
+          <div>
+            <label class="field-label">Egasi ismi</label>
+            <input class="field-input" id="card-name" placeholder="A. KARIMOV" oninput="document.getElementById('prev-name').textContent=this.value.toUpperCase()||'FULLNAME'" />
+          </div>
+          <div>
+            <label class="field-label">Muddat</label>
+            <input class="field-input" id="card-exp" placeholder="MM/YY" maxlength="5" oninput="formatCardExp(this)" />
+          </div>
+          <div>
+            <label class="field-label">Bank nomi</label>
+            <input class="field-input" id="card-bank" placeholder="masalan: Kapitalbank" />
+          </div>
+          <div>
+            <label class="field-label">Karta rangi</label>
+            <select class="field-input" id="card-color" onchange="updateCardPreviewColor()">
+              <option value="navy">Ko'k-qovoq</option>
+              <option value="blue">Ko'k</option>
+              <option value="green">Yashil</option>
+              <option value="purple">Binafsha</option>
+              <option value="red">Qizil</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" style="flex:1" onclick="addCard()">✅ Qo'shish</button>
+          <button class="btn-ghost" onclick="toggleAddCardForm()">Bekor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Safe storage: localStorage with in-memory fallback (for Telegram WebView)
+const _memStore={};
+const safeStorage={
+  getItem(k){
+    try{return safeStorage.getItem(k);}
+    catch(e){return _memStore[k]!==undefined?_memStore[k]:null;}
+  },
+  setItem(k,v){
+    try{safeStorage.setItem(k,v);}
+    catch(e){}
+    _memStore[k]=v;
+  },
+  removeItem(k){
+    try{safeStorage.removeItem(k);}
+    catch(e){}
+    delete _memStore[k];
+  }
+};
+
+function getUserKey(base){return base+'_'+(currentUser&&currentUser.username?currentUser.username:'guest');}
+function EXP_KEY(){return getUserKey('zirix_exp_v1');}
+function GOALS_KEY(){return getUserKey('zirix_goals_v1');}
+function SET_KEY(){return getUserKey('zirix_set_v1');}
+function INC_KEY(){return getUserKey('zirix_inc_v1');}
+const AUTH_KEY='zirix_auth_v1';
+const CARDS_KEY='zirix_cards_v1';
+const UZS=12800;
+let currency='USD', expFilter='Barchasi', incFilter='Barchasi';
+let charts={};
+let incomes=[];
+
+const defaultExpenses=[
+  {id:1,name:'Tushlik',amount:8.5,cat:'🍔 Oziq-ovqat',date:'2025-01-23',note:'Kafe'},
+  {id:2,name:'Metro',amount:1.2,cat:'🚌 Transport',date:'2025-01-23',note:''},
+  {id:3,name:'Supermarket',amount:52,cat:'🍔 Oziq-ovqat',date:'2025-01-22',note:''},
+  {id:4,name:'Kino',amount:18,cat:'🎮 Ko\'ngilochar',date:'2025-01-21',note:''},
+  {id:5,name:'Kommunal',amount:85,cat:'🏠 Uy-joy',date:'2025-01-20',note:''},
+  {id:6,name:'Dori',amount:14,cat:'💊 Salomatlik',date:'2025-01-19',note:''},
+  {id:7,name:'Kitob',amount:22,cat:'📚 Ta\'lim',date:'2025-01-18',note:''},
+  {id:8,name:'Restoran',amount:35,cat:'🍔 Oziq-ovqat',date:'2025-01-17',note:'Oila bilan'},
+  {id:9,name:'Taksi',amount:6,cat:'🚌 Transport',date:'2025-01-16',note:''},
+  {id:10,name:'Kiyim',amount:65,cat:'👕 Kiyim',date:'2025-01-15',note:''},
+];
+
+const defaultGoals=[
+  {id:1,name:'Favqulodda fond',target:10000,current:4200,deadline:'2026-06-01',color:'#00C896'},
+  {id:2,name:'Avtomobil',target:15000,current:3500,deadline:'2027-01-01',color:'#2E7DFF'},
+  {id:3,name:'Ta\'til safari',target:3000,current:2100,deadline:'2025-08-01',color:'#F59E0B'},
+];
+
+let expenses=[], goals=[];
+
+function load(){
+  const stored_exp=safeStorage.getItem(EXP_KEY());
+  expenses=stored_exp!==null?JSON.parse(stored_exp):[];
+  const stored_goals=safeStorage.getItem(GOALS_KEY());
+  goals=stored_goals!==null?JSON.parse(stored_goals):[];
+  const stored_inc=safeStorage.getItem(INC_KEY());
+  incomes=stored_inc!==null?JSON.parse(stored_inc):[];
+  try{const s=JSON.parse(safeStorage.getItem(SET_KEY()));if(s)currency=s.currency||'USD'}catch(e){}
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('exp-date').value=today;
+  document.getElementById('inc-date').value=today;
+  updateCurUI();
+  renderAll();
+}
+
+function persist(){
+  safeStorage.setItem(EXP_KEY(),JSON.stringify(expenses));
+  safeStorage.setItem(GOALS_KEY(),JSON.stringify(goals));
+  safeStorage.setItem(INC_KEY(),JSON.stringify(incomes));
+  safeStorage.setItem(SET_KEY(),JSON.stringify({currency}));
+}
+
+function fmt(usd,short){
+  if(currency==='UZS'){
+    const v=Math.round(usd*UZS);
+    return short?(v>=1000000?(v/1000000).toFixed(1)+'M so\'m':(v/1000).toFixed(0)+'K so\'m'):v.toLocaleString('uz-UZ')+' so\'m';
+  }
+  return short?(usd>=1000?'$'+(usd/1000).toFixed(1)+'K':'$'+usd.toFixed(0)):'$'+usd.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function setCur(c){currency=c;updateCurUI();persist();renderAll();}
+function updateCurUI(){
+  document.getElementById('btn-usd').className='cur-btn'+(currency==='USD'?' active':'');
+  document.getElementById('btn-uzs').className='cur-btn'+(currency==='UZS'?' active':'');
+}
+
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  const titles={overview:'Umumiy ko\'rinish',accounts:'Hisoblar',expenses:'Xarajatlar',income:'Daromadlar',goals:'Maqsadlar',analytics:'Tahlil'};
+  document.getElementById('page-title').textContent=titles[id]||'';
+  if(id==='analytics')setTimeout(()=>{renderCharts();},50);
+  if(id==='overview')setTimeout(()=>{renderOverviewCharts();},50);
+}
+
+function renderAll(){
+  renderBanner();
+  renderKPI();
+  renderOverviewCharts();
+  renderRecentTx();
+  renderAccounts();
+  renderExpenses();
+  renderIncome();
+  renderGoals();
+}
+
+// REAL-TIME BALANCE BANNER
+function renderBanner(){
+  const today=new Date();
+  const ym=today.toISOString().slice(0,7);
+  const monthInc=incomes.filter(i=>i.date.startsWith(ym)).reduce((s,i)=>s+i.amount,0);
+  const monthExp=expenses.filter(e=>e.date.startsWith(ym)).reduce((s,e)=>s+e.amount,0);
+  const totalInc=incomes.reduce((s,i)=>s+i.amount,0);
+  const totalExp=expenses.reduce((s,e)=>s+e.amount,0);
+  const balance=totalInc-totalExp;
+  const net=monthInc-monthExp;
+  document.getElementById('balance-val').textContent=fmt(balance);
+  document.getElementById('balance-val').style.color=balance>=0?'#00C896':'#FF6B6B';
+  document.getElementById('balance-sub').textContent=`Jami daromad: ${fmt(totalInc,true)} · Jami xarajat: ${fmt(totalExp,true)}`;
+  document.getElementById('banner-income').textContent=fmt(monthInc,true);
+  document.getElementById('banner-expense').textContent=fmt(monthExp,true);
+  document.getElementById('banner-net').textContent=(net>=0?'+':'')+fmt(net,true);
+  document.getElementById('banner-net').style.color=net>=0?'#00C896':'#FF6B6B';
+}
+
+// KPI
+function renderKPI(){
+  const today=new Date();
+  const ym=today.toISOString().slice(0,7);
+  const totalInc=incomes.reduce((s,i)=>s+i.amount,0);
+  const totalExp=expenses.reduce((s,e)=>s+e.amount,0);
+  const monthInc=incomes.filter(i=>i.date.startsWith(ym)).reduce((s,i)=>s+i.amount,0);
+  const monthExp=expenses.filter(e=>e.date.startsWith(ym)).reduce((s,e)=>s+e.amount,0);
+  const savings=goals.reduce((s,g)=>s+(g.current||0),0);
+  const savingsTarget=goals.reduce((s,g)=>s+(g.target||0),0);
+  const balance=totalInc-totalExp;
+  const html=`
+    <div class="kpi"><div class="kpi-label">Umumiy qoldiq</div><div class="kpi-icon" style="background:${balance>=0?'#E6FAF5':'#FFF0F0'}">${balance>=0?'💰':'⚠️'}</div><div class="kpi-val" style="color:${balance>=0?'var(--green)':'var(--red)'}">${fmt(balance,true)}</div><div class="kpi-change ${balance>=0?'up':'down'}">${balance>=0?'↑ Musbat balans':'↓ Manfiy balans'}</div></div>
+    <div class="kpi"><div class="kpi-label">Bu oy daromad</div><div class="kpi-icon" style="background:#E6FAF5">📈</div><div class="kpi-val" style="color:var(--green)">${fmt(monthInc,true)}</div><div class="kpi-change up">↑ ${incomes.filter(i=>i.date.startsWith(ym)).length} ta to'lov</div></div>
+    <div class="kpi"><div class="kpi-label">Bu oy xarajat</div><div class="kpi-icon" style="background:#FFF0F0">📉</div><div class="kpi-val" style="color:var(--red)">${fmt(monthExp,true)}</div><div class="kpi-change down">↓ ${expenses.filter(e=>e.date.startsWith(ym)).length} ta operatsiya</div></div>
+    <div class="kpi"><div class="kpi-label">Maqsad %</div><div class="kpi-icon" style="background:#FFFBEB">🎯</div><div class="kpi-val">${savingsTarget?Math.round(savings/savingsTarget*100):0}%</div><div class="kpi-change up">↑ Davom eting!</div></div>
+  `;
+  document.getElementById('kpi-grid').innerHTML=html;
+  document.getElementById('analytics-kpi').innerHTML=html;
+}
+
+// RECENT TX
+function renderRecentTx(){
+  const catBg={'🍔 Oziq-ovqat':'#FFF7ED','🚌 Transport':'#EFF6FF','🏠 Uy-joy':'#F0FDF4','👕 Kiyim':'#FDF4FF','🎮 Ko\'ngilochar':'#FFF1F2','💊 Salomatlik':'#F0FDFA','📚 Ta\'lim':'#FFFBEB','💼 Ish':'#EFF6FF','🔧 Boshqa':'#F8FAFC'};
+  const allTx=[
+    ...expenses.map(e=>({...e,type:'exp'})),
+    ...incomes.map(i=>({...i,type:'inc'}))
+  ].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).slice(0,8);
+  const total=expenses.length+incomes.length;
+  document.getElementById('tx-count-badge').textContent=total+' operatsiya';
+  if(!allTx.length){
+    document.getElementById('recent-tx').innerHTML='<div style="text-align:center;color:var(--text-light);padding:24px;font-size:13px">Hali operatsiya yo\'q</div>';
+    return;
+  }
+  document.getElementById('recent-tx').innerHTML=allTx.map(tx=>{
+    if(tx.type==='inc'){
+      return `<div class="tx-item">
+        <div class="tx-icon" style="background:#E6FAF5">📈</div>
+        <div class="tx-info"><div class="tx-name">${tx.name}</div><div class="tx-cat" style="color:var(--green)">${tx.source||tx.cat}</div></div>
+        <div class="tx-right"><div class="tx-amount income">+${fmt(tx.amount)}</div><div class="tx-date">${tx.date}</div></div>
+      </div>`;
+    }
+    return `<div class="tx-item">
+      <div class="tx-icon" style="background:${catBg[tx.cat]||'#F8FAFC'}">${tx.cat.split(' ')[0]}</div>
+      <div class="tx-info"><div class="tx-name">${tx.name}</div><div class="tx-cat">${tx.cat}</div></div>
+      <div class="tx-right"><div class="tx-amount expense">-${fmt(tx.amount)}</div><div class="tx-date">${tx.date}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ACCOUNTS
+function renderAccounts(){
+  const grid=document.getElementById('accounts-grid');
+  if(!userCards||!userCards.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 20px;background:var(--card);border:2px dashed var(--border);border-radius:14px;color:var(--text-light)">
+      <div style="font-size:32px;margin-bottom:10px">💳</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Hali karta qo'shilmagan</div>
+      <div style="font-size:13px">Yuqoridagi "+ Karta qo'shish" tugmasini bosing</div>
+    </div>`;
+  } else {
+    grid.innerHTML=userCards.map((c,i)=>{
+      const cols=cardColors[c.color]||cardColors.navy;
+      const bal=c.balance!==undefined&&c.balance!==''?parseFloat(c.balance):null;
+      return `<div class="account-card" style="background:linear-gradient(135deg,${cols[0]},${cols[1]});position:relative">
+        <button onclick="deleteCard(${i})" title="Kartani o'chirish" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;z-index:2;transition:all .15s" onmouseover="this.style.background='rgba(255,60,60,.5)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
+        <div class="acc-bank">${c.bank||'FinOva Bank'}</div>
+        <div class="acc-num">${c.num||'**** **** **** ****'}</div>
+        <div class="acc-bal-label">Balans</div>
+        <div class="acc-bal">${bal!==null?fmt(bal):'—'}</div>
+        ${c.name?`<div style="font-size:11px;opacity:.5;margin-top:6px;text-transform:uppercase;letter-spacing:.06em">${c.name}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('all-tx-table').innerHTML=`
+    <thead><tr><th>Sana</th><th>Nomi</th><th>Kategoriya</th><th>Miqdor</th><th></th></tr></thead>
+    <tbody>${expenses.length?expenses.map(e=>`
+      <tr>
+        <td>${e.date}</td>
+        <td>${e.name}${e.note?`<div style="font-size:11px;color:var(--text-light)">${e.note}</div>`:''}</td>
+        <td><span class="badge badge-blue">${e.cat}</span></td>
+        <td style="font-weight:600;color:var(--red)">-${fmt(e.amount)}</td>
+        <td><button class="del-btn" onclick="delExp(${e.id})">✕</button></td>
+      </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text-light);padding:24px">Hali operatsiya yo\'q</td></tr>'}
+    </tbody>`;
+}
+
+// EXPENSES PAGE
+function renderExpenses(){
+  const cats=['Barchasi',...new Set(expenses.map(e=>e.cat))];
+  document.getElementById('exp-filters').innerHTML=cats.map(c=>`
+    <div class="pill ${expFilter===c?'active':''}" onclick="setExpFilter('${c}')">${c}</div>`).join('');
+  const filtered=expFilter==='Barchasi'?expenses:expenses.filter(e=>e.cat===expFilter);
+  document.getElementById('exp-table').innerHTML=`
+    <thead><tr><th>Sana</th><th>Nomi</th><th>Kategoriya</th><th>Izoh</th><th>Miqdor</th><th></th></tr></thead>
+    <tbody>${filtered.map(e=>`
+      <tr>
+        <td>${e.date}</td>
+        <td style="font-weight:500">${e.name}</td>
+        <td>${e.cat}</td>
+        <td style="color:var(--text-light)">${e.note||'—'}</td>
+        <td style="font-weight:600;color:var(--red)">-${fmt(e.amount)}</td>
+        <td><button class="del-btn" onclick="delExp(${e.id})">✕</button></td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+function setExpFilter(c){expFilter=c;renderExpenses();}
+
+function addExpense(){
+  const name=document.getElementById('exp-name').value.trim();
+  let amount=parseFloat(document.getElementById('exp-amount').value);
+  if(!name||isNaN(amount)){showToast('❌ Nomi va miqdorni kiriting');return;}
+  if(currency==='UZS') amount=amount/UZS;
+  const cat=document.getElementById('exp-cat').value;
+  const date=document.getElementById('exp-date').value;
+  const note=document.getElementById('exp-note').value.trim();
+  expenses.unshift({id:Date.now(),name,amount,cat,date,note});
+  persist();renderAll();clearExpForm();
+  showToast('✅ Xarajat qo\'shildi');
+}
+
+function clearExpForm(){
+  ['exp-name','exp-amount','exp-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('exp-date').value=new Date().toISOString().split('T')[0];
+}
+
+function delExp(id){
+  expenses=expenses.filter(e=>e.id!==id);
+  persist();renderAll();showToast('🗑️ O\'chirildi');
+}
+
+// GOALS
+function renderGoals(){
+  document.getElementById('goals-grid').innerHTML=goals.map(g=>{
+    const pct=g.target?Math.min(100,Math.round((g.current||0)/g.target*100)):0;
+    const done=pct>=100;
+    return `<div class="goal-card">
+      <div class="goal-top">
+        <div><div class="goal-name">${g.name}</div><div class="goal-deadline" style="color:var(--text-light)">${g.deadline||''}</div></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="badge" style="background:${g.color}22;color:${g.color}">${pct}%</span>
+          <button class="del-btn" onclick="delGoal(${g.id})">✕</button>
+        </div>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${g.color}"></div></div>
+      <div class="goal-amounts"><span>${fmt(g.current||0)} jamg'arilgan</span><span>Maqsad: <strong>${fmt(g.target||0)}</strong></span></div>
+      ${!done?`<div style="display:flex;gap:8px;margin-top:12px">
+        <input class="field-input" type="number" id="gu-${g.id}" placeholder="Yangilash (${currency==='UZS'?'so\'m':'$'})" style="flex:1;font-size:12px;padding:7px 10px"/>
+        <button class="btn-primary" style="padding:7px 14px;font-size:12px" onclick="updateGoal(${g.id})">Yangilash</button>
+      </div>`:'<div style="margin-top:10px;text-align:center;font-size:13px;color:var(--green);font-weight:600">🎉 Maqsadga yetildi!</div>'}
+    </div>`;
+  }).join('')+`<div class="add-goal-card" onclick="openGoalModal()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Yangi maqsad qo'shish
+  </div>`;
+}
+
+function openGoalModal(){document.getElementById('goal-modal').classList.add('open');}
+function closeGoalModal(){document.getElementById('goal-modal').classList.remove('open');['g-name','g-target','g-current','g-deadline'].forEach(id=>document.getElementById(id).value='');}
+
+function saveGoal(){
+  const name=document.getElementById('g-name').value.trim();
+  let target=parseFloat(document.getElementById('g-target').value)||0;
+  let current=parseFloat(document.getElementById('g-current').value)||0;
+  if(!name||!target){showToast('❌ Nom va summani kiriting');return;}
+  if(currency==='UZS'){target=target/UZS;current=current/UZS;}
+  const deadline=document.getElementById('g-deadline').value;
+  const color=document.getElementById('g-color').value;
+  goals.push({id:Date.now(),name,target,current,deadline,color});
+  persist();renderGoals();closeGoalModal();showToast('🎯 Maqsad qo\'shildi!');
+}
+
+function updateGoal(id){
+  const inp=document.getElementById('gu-'+id);
+  let val=parseFloat(inp.value);
+  if(isNaN(val)) return;
+  if(currency==='UZS') val=val/UZS;
+  const g=goals.find(x=>x.id===id);
+  if(g){
+    const wasDone=g.current>=g.target;
+    g.current=val;
+    if(!wasDone&&g.current>=g.target){showToast('🎊 Tabriklaymiz! Maqsadga yetdingiz!');}
+    else showToast('💾 Yangilandi!');
+    persist();renderGoals();renderKPI();
+  }
+}
+
+function delGoal(id){goals=goals.filter(g=>g.id!==id);persist();renderGoals();renderKPI();}
+
+// CHARTS
+function destroyChart(key){if(charts[key]){charts[key].destroy();delete charts[key];}}
+
+function renderOverviewCharts(){
+  // Build last 6 months labels and data
+  const today=new Date();
+  const monthLabels=[];
+  const monthExpData=[];
+  const monthIncData=[];
+  const uzNames=['Yan','Fev','Mar','Apr','May','Iyn','Iyl','Avg','Sen','Okt','Noy','Dek'];
+  for(let i=5;i>=0;i--){
+    const d=new Date(today.getFullYear(),today.getMonth()-i,1);
+    const ym=d.toISOString().slice(0,7);
+    monthLabels.push(uzNames[d.getMonth()]);
+    const sc=currency==='UZS'?UZS:1;
+    monthExpData.push(parseFloat((expenses.filter(e=>e.date.startsWith(ym)).reduce((s,e)=>s+e.amount,0)*sc).toFixed(2)));
+    monthIncData.push(parseFloat((incomes.filter(inc=>inc.date.startsWith(ym)).reduce((s,inc)=>s+inc.amount,0)*sc).toFixed(2)));
+  }
+
+  destroyChart('overview');
+  charts['overview']=new Chart(document.getElementById('overviewChart'),{
+    type:'bar',
+    data:{labels:monthLabels,datasets:[
+      {label:'Daromad',data:monthIncData,backgroundColor:'rgba(0,200,150,.7)',borderRadius:6,borderSkipped:false},
+      {label:'Xarajat',data:monthExpData,backgroundColor:'rgba(46,125,255,.7)',borderRadius:6,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10}}},scales:{y:{ticks:{callback:v=>currency==='UZS'?(v/1000)+'K':'$'+v,font:{size:11}},grid:{color:'#F1F5F9'}},x:{grid:{display:false},ticks:{font:{size:11}}}}}
+  });
+
+  const catTotals={};
+  expenses.forEach(e=>{catTotals[e.cat]=(catTotals[e.cat]||0)+e.amount;});
+  const catLabels=Object.keys(catTotals).map(k=>k.split(' ')[0]);
+  const catVals=Object.values(catTotals).map(v=>currency==='UZS'?Math.round(v*UZS):parseFloat(v.toFixed(2)));
+
+  destroyChart('cat');
+  if(catLabels.length){
+    charts['cat']=new Chart(document.getElementById('catChart'),{
+      type:'doughnut',
+      data:{labels:catLabels,datasets:[{data:catVals,backgroundColor:['#2E7DFF','#00C896','#F59E0B','#FF4D4D','#8B5CF6','#EC4899','#14B8A6','#F97316'],borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:8}}}}
+    });
+  } else {
+    const ctx=document.getElementById('catChart').getContext('2d');
+    ctx.clearRect(0,0,300,200);
+    ctx.fillStyle='#94A3B8';ctx.font='13px Inter';ctx.textAlign='center';
+    ctx.fillText('Xarajat yo\'q',150,100);
+  }
+}
+
+function renderCharts(){
+  const today=new Date();
+  const uzNames=['Yan','Fev','Mar','Apr','May','Iyn','Iyl','Avg','Sen','Okt','Noy','Dek'];
+  const monthLabels=[];
+  const monthExpData=[];
+  const monthIncData=[];
+  const sc=currency==='UZS'?UZS:1;
+  for(let i=5;i>=0;i--){
+    const d=new Date(today.getFullYear(),today.getMonth()-i,1);
+    const ym=d.toISOString().slice(0,7);
+    monthLabels.push(uzNames[d.getMonth()]);
+    monthExpData.push(parseFloat((expenses.filter(e=>e.date.startsWith(ym)).reduce((s,e)=>s+e.amount,0)*sc).toFixed(2)));
+    monthIncData.push(parseFloat((incomes.filter(inc=>inc.date.startsWith(ym)).reduce((s,inc)=>s+inc.amount,0)*sc).toFixed(2)));
+  }
+
+  destroyChart('ie');
+  charts['ie']=new Chart(document.getElementById('incomeExpChart'),{
+    type:'line',
+    data:{labels:monthLabels,datasets:[
+      {label:'Daromad',data:monthIncData,borderColor:'#00C896',backgroundColor:'rgba(0,200,150,.08)',fill:true,tension:.4,pointRadius:4},
+      {label:'Xarajat',data:monthExpData,borderColor:'#2E7DFF',backgroundColor:'rgba(46,125,255,.08)',fill:true,tension:.4,pointRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{y:{ticks:{callback:v=>currency==='UZS'?(v/1000)+'K':'$'+v,font:{size:11}},grid:{color:'#F1F5F9'}},x:{grid:{display:false},ticks:{font:{size:11}}}}}
+  });
+
+  const catTotals={};
+  expenses.forEach(e=>{catTotals[e.cat]=(catTotals[e.cat]||0)+e.amount;});
+
+  destroyChart('catPie');
+  if(Object.keys(catTotals).length){
+    charts['catPie']=new Chart(document.getElementById('catPieChart'),{
+      type:'pie',
+      data:{labels:Object.keys(catTotals),datasets:[{data:Object.values(catTotals).map(v=>parseFloat((v*sc).toFixed(2))),backgroundColor:['#2E7DFF','#00C896','#F59E0B','#FF4D4D','#8B5CF6','#EC4899','#14B8A6','#F97316'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:10}}}}
+    });
+  }
+
+  // Daromad manbalari (source) pie
+  const srcTotals={};
+  incomes.forEach(inc=>{const k=inc.source||inc.cat||'Boshqa';srcTotals[k]=(srcTotals[k]||0)+inc.amount;});
+  destroyChart('src');
+  if(Object.keys(srcTotals).length){
+    charts['src']=new Chart(document.getElementById('sourceChart'),{
+      type:'doughnut',
+      data:{labels:Object.keys(srcTotals),datasets:[{data:Object.values(srcTotals).map(v=>parseFloat((v*sc).toFixed(2))),backgroundColor:['#00C896','#2E7DFF','#F59E0B','#8B5CF6','#FF4D4D','#EC4899','#14B8A6','#F97316'],borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:8}}}}
+    });
+  }
+
+  const longterm=goals.filter(g=>g.target);
+  destroyChart('savings');
+  charts['savings']=new Chart(document.getElementById('savingsChart'),{
+    type:'bar',
+    data:{
+      labels:longterm.length?longterm.map(g=>g.name.length>16?g.name.slice(0,16)+'...':g.name):['Maqsad yo\'q'],
+      datasets:[
+        {label:'Jamg\'arilgan',data:longterm.length?longterm.map(g=>parseFloat(((g.current||0)*sc).toFixed(2))):[0],backgroundColor:'#00C896',borderRadius:6,borderSkipped:false},
+        {label:'Qolgan',data:longterm.length?longterm.map(g=>parseFloat((Math.max(0,g.target-(g.current||0))*sc).toFixed(2))):[0],backgroundColor:'#E2E8F0',borderRadius:6,borderSkipped:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,ticks:{callback:v=>currency==='UZS'?(v/1000)+'K':'$'+v,font:{size:11}},grid:{color:'#F1F5F9'}}}}
+  });
+
+  // Source analysis (last 30 days)
+  renderSourceAnalysis();
+}
+
+// SOURCE ANALYSIS — last 30 days income by source
+function renderSourceAnalysis(){
+  const el=document.getElementById('source-analysis');
+  if(!el)return;
+  const now=new Date();
+  const cutoff=new Date(now-30*24*60*60*1000).toISOString().split('T')[0];
+  const recent=incomes.filter(i=>i.date>=cutoff);
+  const srcTotals={};
+  recent.forEach(i=>{const k=i.source||i.cat||'Boshqa';srcTotals[k]=(srcTotals[k]||0)+i.amount;});
+  const total=Object.values(srcTotals).reduce((s,v)=>s+v,0);
+  const colors=['#00C896','#2E7DFF','#F59E0B','#8B5CF6','#FF4D4D','#EC4899','#14B8A6','#F97316'];
+  if(!total){
+    el.innerHTML='<div style="text-align:center;color:var(--text-light);padding:20px;font-size:13px">So\'nggi 30 kunda daromad yo\'q</div>';
+    return;
+  }
+  const sorted=Object.entries(srcTotals).sort((a,b)=>b[1]-a[1]);
+  el.innerHTML=sorted.map(([src,amt],i)=>{
+    const pct=Math.round(amt/total*100);
+    const col=colors[i%colors.length];
+    const cnt=recent.filter(inc=>(inc.source||inc.cat||'Boshqa')===src).length;
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:10px;height:10px;border-radius:50%;background:${col};flex-shrink:0"></div>
+          <span style="font-size:13px;font-weight:600;color:var(--text)">${src}</span>
+          <span style="font-size:11px;color:var(--text-light)">${cnt} ta to'lov</span>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:14px;font-weight:700;color:var(--green)">${fmt(amt)}</span>
+          <span style="font-size:11px;color:var(--text-light);margin-left:6px">${pct}%</span>
+        </div>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;transition:width .4s"></div>
+      </div>
+    </div>`;
+  }).join('')+`<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:12px;color:var(--text-light)">Jami (30 kun)</span>
+    <span style="font-size:15px;font-weight:700;color:var(--green)">${fmt(total)}</span>
+  </div>`;
+}
+
+// ============ INCOME CRUD ============
+function addIncome(){
+  const name=document.getElementById('inc-name').value.trim();
+  let amount=parseFloat(document.getElementById('inc-amount').value);
+  if(!name||isNaN(amount)||amount<=0){showToast('❌ Nomi va miqdorni kiriting');return;}
+  if(currency==='UZS') amount=amount/UZS;
+  const source=document.getElementById('inc-source').value.trim();
+  const cat=document.getElementById('inc-cat').value;
+  const date=document.getElementById('inc-date').value;
+  const note=document.getElementById('inc-note').value.trim();
+  incomes.unshift({id:Date.now(),name,amount,source,cat,date,note});
+  persist();renderAll();clearIncForm();
+  showToast('✅ Daromad qo\'shildi');
+}
+
+function clearIncForm(){
+  ['inc-name','inc-amount','inc-source','inc-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('inc-date').value=new Date().toISOString().split('T')[0];
+}
+
+function delIncome(id){
+  incomes=incomes.filter(i=>i.id!==id);
+  persist();renderAll();showToast('🗑️ O\'chirildi');
+}
+
+function setIncFilter(f){incFilter=f;renderIncome();}
+
+function renderIncome(){
+  const sources=['Barchasi',...new Set(incomes.map(i=>i.source||i.cat||'Boshqa'))];
+  document.getElementById('inc-filters').innerHTML=sources.map(s=>`
+    <div class="pill ${incFilter===s?'active':''}" onclick="setIncFilter('${s}')">${s}</div>`).join('');
+  const filtered=incFilter==='Barchasi'?incomes:incomes.filter(i=>(i.source||i.cat||'Boshqa')===incFilter);
+  const tbody=filtered.length?filtered.map(i=>`
+    <tr>
+      <td>${i.date}</td>
+      <td style="font-weight:500">${i.name}</td>
+      <td><span class="badge" style="background:#E6FAF5;color:#006B50">${i.source||'—'}</span></td>
+      <td>${i.cat}</td>
+      <td style="color:var(--text-light);font-size:12px">${i.note||'—'}</td>
+      <td style="font-weight:600;color:var(--green)">+${fmt(i.amount)}</td>
+      <td><button class="del-btn" onclick="delIncome(${i.id})">✕</button></td>
+    </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-light);padding:24px">Hali daromad yo\'q</td></tr>';
+  document.getElementById('inc-table').innerHTML=`
+    <thead><tr><th>Sana</th><th>Nomi</th><th>Ish xonasi</th><th>Kategoriya</th><th>Izoh</th><th>Miqdor</th><th></th></tr></thead>
+    <tbody>${tbody}</tbody>`;
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ============ AUTH & PROFILE ============
+const PROF_KEY='zirix_profile_v1';
+
+let currentUser=null;
+let userCards=[];
+
+const cardColors={
+  navy:['#0B1F3A','#1E3A66'],
+  blue:['#185FA5','#2E7DFF'],
+  green:['#006B50','#00C896'],
+  purple:['#4C1D95','#8B5CF6'],
+  red:['#7F1D1D','#DC2626']
+};
+
+function doLogin(){
+  const un=document.getElementById('login-username').value.trim();
+  const pw=document.getElementById('login-password').value;
+  const err=document.getElementById('login-err');
+  if(!un||pw.length<4){err.style.display='block';return;}
+  err.style.display='none';
+  // Load or create user
+  let stored=null;
+  try{stored=JSON.parse(safeStorage.getItem(AUTH_KEY));}catch(e){}
+  if(stored&&stored.username===un){
+    if(stored.password!==pw){err.style.display='block';return;}
+    currentUser=stored;
+  } else if(!stored){
+    currentUser={username:un,fullname:un,password:pw};
+    safeStorage.setItem(AUTH_KEY,JSON.stringify(currentUser));
+  } else {
+    // Different user stored — for demo allow any new login
+    currentUser={username:un,fullname:un,password:pw};
+    safeStorage.setItem(AUTH_KEY,JSON.stringify(currentUser));
+  }
+  loadCards();
+  applyUserToUI();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('main-shell').style.display='flex';
+  setTimeout(()=>{document.getElementById('login-screen').style.display='none';},400);
+  load();
+}
+
+function doLogout(){
+  document.getElementById('main-shell').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-username').value='';
+  document.getElementById('login-password').value='';
+  currentUser=null;
+}
+
+function applyUserToUI(){
+  if(!currentUser)return;
+  const name=currentUser.fullname||currentUser.username||'User';
+  const initial=(name[0]||'U').toUpperCase();
+  document.getElementById('sidebar-username').textContent=name;
+  document.getElementById('sidebar-avatar').textContent=initial;
+  document.getElementById('topbar-avatar').textContent=initial;
+}
+
+// ============ PROFILE MODAL ============
+function openProfileModal(){
+  if(!currentUser)return;
+  document.getElementById('prof-username').value=currentUser.username||'';
+  document.getElementById('prof-fullname').value=currentUser.fullname||'';
+  document.getElementById('prof-password').value='';
+  renderCardsList();
+  document.getElementById('profile-modal').classList.add('open');
+}
+function closeProfileModal(){
+  document.getElementById('profile-modal').classList.remove('open');
+  document.getElementById('add-card-form').style.display='none';
+}
+
+function saveProfile(){
+  const un=document.getElementById('prof-username').value.trim();
+  const fn=document.getElementById('prof-fullname').value.trim();
+  const pw=document.getElementById('prof-password').value;
+  if(!un){showToast('❌ Foydalanuvchi nomini kiriting');return;}
+  currentUser.username=un;
+  currentUser.fullname=fn||un;
+  if(pw.length>=4) currentUser.password=pw;
+  safeStorage.setItem(AUTH_KEY,JSON.stringify(currentUser));
+  applyUserToUI();
+  showToast('✅ Profil saqlandi!');
+}
+
+// ============ CARDS ============
+function loadCards(){
+  try{userCards=JSON.parse(safeStorage.getItem(getUserKey(CARDS_KEY)))||[];}
+  catch(e){userCards=[];}
+}
+
+function saveCards(){
+  safeStorage.setItem(getUserKey(CARDS_KEY),JSON.stringify(userCards));
+}
+
+function renderCardsList(){
+  const list=document.getElementById('cards-list');
+  if(!userCards.length){
+    list.innerHTML='<div style="text-align:center;color:var(--text-light);font-size:13px;padding:16px">Hech qanday karta yo\'q</div>';
+    return;
+  }
+  list.innerHTML=userCards.map((c,i)=>{
+    const cols=cardColors[c.color]||cardColors.navy;
+    return `<div class="card-item" style="background:linear-gradient(135deg,${cols[0]},${cols[1]})">
+      <div style="position:absolute;right:-15px;top:-15px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+      <div class="card-item-info">
+        <div class="card-item-name">${c.bank||'FinOva Bank'}</div>
+        <div class="card-item-num">${c.num||'•••• •••• •••• ••••'}</div>
+        <div class="card-item-exp">${c.name||''} · ${c.exp||''}</div>
+      </div>
+      <button class="card-del-btn" onclick="deleteCard(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleAddCardForm(){
+  const f=document.getElementById('add-card-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+  if(f.style.display==='block'){
+    document.getElementById('card-num').value='';
+    document.getElementById('card-name').value='';
+    document.getElementById('card-exp').value='';
+    document.getElementById('card-bank').value='';
+    document.getElementById('card-color').value='navy';
+    document.getElementById('prev-num').textContent='•••• •••• •••• ••••';
+    document.getElementById('prev-name').textContent='FULLNAME';
+    document.getElementById('prev-exp').textContent='MM/YY';
+    updateCardPreviewColor();
+  }
+}
+
+function formatCardNum(inp){
+  let v=inp.value.replace(/\D/g,'').slice(0,16);
+  inp.value=v.replace(/(.{4})/g,'$1 ').trim();
+  const disp=inp.value||'•••• •••• •••• ••••';
+  document.getElementById('prev-num').textContent=disp.length<19?disp+'  •'.repeat((19-disp.length)/2).slice(0,19-disp.length):disp;
+  document.getElementById('prev-num').textContent=inp.value||'•••• •••• •••• ••••';
+}
+
+function formatCardExp(inp){
+  let v=inp.value.replace(/\D/g,'').slice(0,4);
+  if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
+  inp.value=v;
+  document.getElementById('prev-exp').textContent=v||'MM/YY';
+}
+
+function updateCardPreviewColor(){
+  const col=document.getElementById('card-color').value;
+  const cols=cardColors[col]||cardColors.navy;
+  document.getElementById('card-preview').style.background=`linear-gradient(135deg,${cols[0]},${cols[1]})`;
+}
+
+function addCard(){
+  const num=document.getElementById('card-num').value.trim();
+  const name=document.getElementById('card-name').value.trim();
+  const exp=document.getElementById('card-exp').value.trim();
+  const bank=document.getElementById('card-bank').value.trim();
+  const color=document.getElementById('card-color').value;
+  if(!num||num.replace(/\s/g,'').length<12){showToast('❌ To\'g\'ri karta raqami kiriting');return;}
+  if(!exp){showToast('❌ Muddat kiriting');return;}
+  userCards.push({num,name,exp,bank,color});
+  saveCards();
+  renderCardsList();
+  toggleAddCardForm();
+  showToast('💳 Karta qo\'shildi!');
+}
+
+function deleteCard(i){
+  userCards.splice(i,1);
+  saveCards();
+  renderCardsList();
+  renderAccounts();
+  showToast('🗑️ Karta o\'chirildi');
+}
+
+// ============ INLINE CARD FORM (Accounts page) ============
+function openAddCardInline(){
+  const f=document.getElementById('inline-card-form');
+  f.style.display='block';
+  f.scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('icard-num').value='';
+  document.getElementById('icard-name').value='';
+  document.getElementById('icard-exp').value='';
+  document.getElementById('icard-bank').value='';
+  document.getElementById('icard-bal').value='';
+  document.getElementById('icard-color').value='navy';
+  document.getElementById('iprev-num').textContent='•••• •••• •••• ••••';
+  document.getElementById('iprev-name').textContent='TO\'LIQ ISM';
+  document.getElementById('iprev-exp').textContent='MM/YY';
+  iUpdatePreviewColor();
+}
+function closeAddCardInline(){
+  document.getElementById('inline-card-form').style.display='none';
+}
+function iFormatNum(inp){
+  let v=inp.value.replace(/\D/g,'').slice(0,16);
+  inp.value=v.replace(/(.{4})/g,'$1 ').trim();
+  document.getElementById('iprev-num').textContent=inp.value||'•••• •••• •••• ••••';
+}
+function iFormatExp(inp){
+  let v=inp.value.replace(/\D/g,'').slice(0,4);
+  if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
+  inp.value=v;
+  document.getElementById('iprev-exp').textContent=v||'MM/YY';
+}
+function iUpdatePreviewColor(){
+  const col=document.getElementById('icard-color').value;
+  const cols=cardColors[col]||cardColors.navy;
+  document.getElementById('inline-card-preview').style.background=`linear-gradient(135deg,${cols[0]},${cols[1]})`;
+}
+function addCardInline(){
+  const num=document.getElementById('icard-num').value.trim();
+  const name=document.getElementById('icard-name').value.trim();
+  const exp=document.getElementById('icard-exp').value.trim();
+  const bank=document.getElementById('icard-bank').value.trim();
+  const color=document.getElementById('icard-color').value;
+  const bal=document.getElementById('icard-bal').value;
+  if(!num||num.replace(/\s/g,'').length<12){showToast('❌ To\'g\'ri karta raqami kiriting');return;}
+  if(!exp){showToast('❌ Muddat kiriting');return;}
+  userCards.push({num,name,exp,bank,color,balance:bal!==''?parseFloat(bal):''});
+  saveCards();
+  renderCardsList();
+  renderAccounts();
+  closeAddCardInline();
+  showToast('💳 Karta qo\'shildi!');
+}
+
+// Check if already logged in on page load
+(function init(){
+  function run(){
+    try{
+      const stored=safeStorage.getItem(AUTH_KEY);
+      if(stored){
+        currentUser=JSON.parse(stored);
+        loadCards();
+        applyUserToUI();
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('main-shell').style.display='flex';
+        load();
+      }
+    }catch(e){/* show login */}
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',run);
+  } else {
+    run();
+  }
+})();
+
+// Enter key on login — cross-browser safe
+document.addEventListener('DOMContentLoaded',function(){
+  ['login-username','login-password'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){
+      el.addEventListener('keydown',function(e){
+        if(e.key==='Enter'||e.keyCode===13) doLogin();
+      });
+    }
+  });
+  // Fix iOS input zoom
+  document.querySelectorAll('input,select,textarea').forEach(function(el){
+    if(parseFloat(window.getComputedStyle(el).fontSize)<16){
+      el.style.fontSize='16px';
+    }
+  });
+});
+</script>
+</body>
+</html>
